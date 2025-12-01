@@ -1,14 +1,14 @@
-# Graph Neural Networks (GNN)
+# Graph Neural Networks
 
 ## Overview
-Graph Neural Networks are designed to process data that is best represented as a graph (nodes and edges), such as social networks, molecular structures, or knowledge graphs. Standard neural networks expect fixed-size vectors or grids (images), whereas GNNs can handle irregular graph structures.
+Graph Neural Networks (GNNs) are a class of deep learning methods designed to perform inference on data described by graphs. They provide a way to handle non-Euclidean data structures like social networks, molecular structures, and knowledge graphs.
 
 ## Key Categories
 
-### 1. Graph Convolution
-Generalizing the convolution operation to graphs.
-*   **GCN (Graph Convolutional Network)**: A spectral approach to graph convolution, aggregating information from immediate neighbors.
+### Graph Attention
+Mechanisms that allow the model to weigh the importance of different neighbor nodes.
+*   **GAT (Graph Attention Network)**: Uses attention mechanisms to learn the relative weights between two connected nodes.
 
-### 2. Graph Attention
-Applying attention mechanisms to graphs.
-*   **GAT (Graph Attention Network)**: Learning to weigh the importance of different neighbors dynamically, rather than treating them all equally.
+### Graph Convolution
+Generalizing the convolution operation from grid data (images) to graph data.
+*   **GCN_Spectral (Graph Convolutional Network)**: A semi-supervised learning approach on graph-structured data based on an efficient variant of Convolutional Neural Networks.

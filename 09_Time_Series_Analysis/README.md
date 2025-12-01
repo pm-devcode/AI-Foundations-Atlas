@@ -1,14 +1,14 @@
 # Time Series Analysis
 
 ## Overview
-Time Series Analysis involves methods for analyzing time-ordered data points to extract meaningful statistics and other characteristics of the data. It is widely used in finance, weather forecasting, and supply chain management.
+Time Series Analysis involves methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. It is widely used in forecasting, signal processing, and econometrics.
 
 ## Key Categories
 
-### 1. Statistical Methods
-Traditional approaches based on statistical properties like autocorrelation and stationarity.
-*   **ARIMA (Autoregressive Integrated Moving Average)**: A powerful statistical model that combines Autoregression (AR), Differencing (I), and Moving Average (MA) components.
+### Deep Learning
+Using neural networks to capture complex temporal dependencies.
+*   **LSTM_TimeSeries**: Long Short-Term Memory networks are well-suited for classifying, processing and making predictions based on time series data.
 
-### 2. Deep Learning Methods
-Using neural networks to capture complex non-linear dependencies in time.
-*   **LSTM for Time Series**: Leveraging Long Short-Term Memory networks to forecast future values based on long historical sequences.
+### Statistical
+Traditional statistical methods for modeling and forecasting.
+*   **ARIMA**: AutoRegressive Integrated Moving Average is a class of models that explains a given time series based on its own past values, that is, its own lags and the lagged forecast errors.

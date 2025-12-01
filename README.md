@@ -68,7 +68,7 @@ Each algorithm module is self-contained and typically includes:
 3.  **`01_pytorch.py` / `01_sklearn.py`**: The "Modern" implementation showing how to achieve the same result using industry-standard libraries.
 
 ### Example Workflow
-1.  Navigate to a module, e.g., `01_Classical_Machine_Learning/01_Regression/01_Linear_Regression_Simple`.
+1.  Navigate to a module, e.g., `01_Classical_Machine_Learning/Regression/Linear_Regression_Simple`.
 2.  Read the `README.md` to understand the Gradient Descent derivation.
 3.  Run the scratch implementation to see the math in action:
     ```bash
