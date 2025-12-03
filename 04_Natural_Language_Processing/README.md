@@ -22,3 +22,4 @@ Breaking text into smaller units for processing.
 ### Transformers
 The modern standard for NLP.
 *   **Self-Attention Mechanism**: The core component of the Transformer, allowing the model to weigh the importance of different words in a sentence regardless of their distance.
+*   **Simple GPT**: A simplified implementation of the Generative Pre-trained Transformer (Decoder-only architecture) for causal language modeling.

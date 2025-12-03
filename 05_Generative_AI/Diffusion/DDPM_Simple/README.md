@@ -1,51 +1,80 @@
 # Denoising Diffusion Probabilistic Models (DDPM)
 
-## 1. Introduction
-Diffusion models are a class of generative models that learn to generate data by reversing a gradual noise addition process. Unlike GANs, which learn an implicit distribution, or VAEs, which learn an approximate posterior, Diffusion models learn the gradients of the data distribution (score matching) or, equivalently, how to denoise an image step-by-step.
+## 1. Executive Summary
+**Diffusion Models** are a class of generative models that learn to generate data by reversing a gradual noise addition process. Unlike GANs (which use adversarial training) or VAEs (which use variational inference), Diffusion models learn to systematically "denoise" an image step-by-step. They have recently surpassed GANs in image synthesis quality, powering state-of-the-art systems like DALL-E 2, Stable Diffusion, and Midjourney.
 
 ## 2. Historical Context
-*   **The Origins:** The concept was introduced by **Sohl-Dickstein et al.** in 2015 ("Deep Unsupervised Learning using Nonequilibrium Thermodynamics").
-*   **The Renaissance:** It remained relatively obscure until **Ho et al.** (2020) demonstrated high-quality image synthesis with "Denoising Diffusion Probabilistic Models" (DDPM), showing they could beat GANs. This led to the explosion of models like DALL-E 2 and Stable Diffusion.
+*   **Origins (2015)**: The concept was introduced by **Sohl-Dickstein et al.** in "Deep Unsupervised Learning using Nonequilibrium Thermodynamics", inspired by physics.
+*   **The Breakthrough (2020)**: **Jonathan Ho et al.** published "Denoising Diffusion Probabilistic Models" (DDPM), showing that a specific parameterization (predicting the noise) allowed these models to generate high-quality images, sparking the current generative AI boom.
 
 ## 3. Real-World Analogy
-### Rewinding the Ink Drop
+**Rewinding the Ink Drop**
 Imagine dropping a single drop of blue ink into a glass of clear water.
-*   **Forward Process (Diffusion):** Over time, the ink spreads out until the water is uniformly pale blue. The structure of the drop is lost to entropy. This is easy to simulate.
-*   **Reverse Process (Generation):** Now, imagine watching a video of this process in reverse. You see the pale blue water spontaneously gathering molecules together to form a sharp, defined drop. This is what the model learns: how to take "chaos" (noise) and carefully push it back into "order" (an image).
+*   **Forward Process (Diffusion)**: Over time, the ink spreads out until the water is uniformly pale blue. The structure of the drop is lost to entropy. This is easy to simulate (adding noise).
+*   **Reverse Process (Generation)**: Now, imagine watching a video of this process in reverse. You see the pale blue water spontaneously gathering molecules together to form a sharp, defined drop. This is what the model learns: how to take "chaos" (random noise) and carefully push it back into "order" (an image).
 
-## 4. Core Concepts
+## 4. Mathematical Foundation
+The model consists of two processes:
 
-### 4.1 The Forward Process (Diffusion)
-The forward process is a fixed Markov chain that gradually adds Gaussian noise to the data according to a variance schedule $\beta_1, \dots, \beta_T$.
-
-Given a data point $x_0 \sim q(x_0)$, the forward process at step $t$ is:
+### 4.1 Forward Process (Diffusion)
+A fixed Markov chain that gradually adds Gaussian noise to the data $x_0$ over $T$ steps.
 $$ q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1 - \beta_t} x_{t-1}, \beta_t \mathbf{I}) $$
+We can sample $x_t$ directly from $x_0$:
+$$ x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon $$
 
-A key property is that we can sample $x_t$ at any timestep $t$ directly from $x_0$:
-$$ q(x_t | x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha}_t} x_0, (1 - \bar{\alpha}_t) \mathbf{I}) $$
-where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$.
-
-### 2.2 The Reverse Process (Denoising)
-The reverse process is a learned Markov chain where a neural network predicts the parameters of the reverse transition:
+### 4.2 Reverse Process (Denoising)
+A learned Markov chain where a neural network predicts the noise to remove.
 $$ p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \Sigma_\theta(x_t, t)) $$
 
-In the simplified DDPM objective (Ho et al., 2020), we fix the variance and train a network $\epsilon_\theta(x_t, t)$ to predict the noise $\epsilon$ that was added to $x_0$ to get $x_t$.
+### 4.3 Objective
+We train a network $\epsilon_\theta(x_t, t)$ to predict the noise $\epsilon$ that was added to $x_0$. The loss is simply Mean Squared Error (MSE):
+$$ L = || \epsilon - \epsilon_\theta(x_t, t) ||^2 $$
 
-### 2.3 Training Objective
-The loss function is simply the Mean Squared Error (MSE) between the actual noise added and the predicted noise:
-$$ L_{simple}(\theta) = \mathbb{E}_{t, x_0, \epsilon} [ \| \epsilon - \epsilon_\theta(\sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon, t) \|^2 ] $$
+## 5. Architecture (U-Net)
 
-## 3. Architecture (U-Net)
+```mermaid
+graph TD
+    Input[Noisy Image x_t] --> Down1[Downsample Block 1]
+    Time[Time Embedding t] --> Down1
+    Down1 --> Down2[Downsample Block 2]
+    Time --> Down2
+    Down2 --> Bottleneck[Bottleneck]
+    Bottleneck --> Up1[Upsample Block 1]
+    Time --> Up1
+    Down2 -. Skip Connection .-> Up1
+    Up1 --> Up2[Upsample Block 2]
+    Time --> Up2
+    Down1 -. Skip Connection .-> Up2
+    Up2 --> Output[Predicted Noise ε]
+    
+    style Input fill:#f9f,stroke:#333,stroke-width:2px
+    style Output fill:#9f9,stroke:#333,stroke-width:2px
+    style Time fill:#ff9,stroke:#333,stroke-width:2px
+```
 
-The standard architecture for the noise predictor $\epsilon_\theta$ is a **U-Net**.
-- **Input**: Noisy image $x_t$ and time embedding $t$.
-- **Output**: Predicted noise $\epsilon$ (same shape as input).
-- **Time Embedding**: Sinusoidal embeddings (like in Transformers) are injected into the network to tell it which timestep $t$ it is currently denoising.
+## 6. Implementation Details
+The repository contains a PyTorch implementation (`01_ddpm_mnist.py`):
 
-## 4. Sampling Algorithm
+*   **`Diffusion` Class**: Handles the noise schedule ($\beta_t$), forward diffusion sampling, and the reverse sampling loop.
+*   **`SimpleUNet`**: A simplified U-Net architecture with:
+    *   **Sinusoidal Time Embeddings**: Injected into each block so the network knows *how much* noise to remove.
+    *   **Residual Blocks**: For stable training.
+    *   **Skip Connections**: To preserve spatial information.
+*   **Training**: Trains on MNIST to generate handwritten digits.
 
-1. Sample $x_T \sim \mathcal{N}(0, \mathbf{I})$.
-2. For $t = T, \dots, 1$:
-   - Sample $z \sim \mathcal{N}(0, \mathbf{I})$ (if $t > 1$, else $z=0$).
-   - Compute $x_{t-1} = \frac{1}{\sqrt{\alpha_t}} (x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(x_t, t)) + \sigma_t z$.
-3. Return $x_0$.
+## 7. How to Run
+Run the script from the terminal:
+
+```bash
+python 01_ddpm_mnist.py
+```
+
+## 8. Implementation Results
+
+### Generated Samples
+![Generated Samples](assets/ddpm_generated.png)
+*Images generated by the DDPM model after training on MNIST. Starting from pure noise, the model iteratively refines the image over 300 timesteps to produce coherent digits.*
+
+## 9. References
+*   Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N., & Ganguli, S. (2015). *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*.
+*   Ho, J., Jain, A., & Abbeel, P. (2020). *Denoising Diffusion Probabilistic Models*.

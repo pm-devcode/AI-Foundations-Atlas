@@ -1,44 +1,64 @@
 # Deep Q-Network (DQN)
 
-## 1. Introduction
-Deep Q-Network (DQN) combines Q-Learning with deep neural networks to handle high-dimensional state spaces (like pixels in Atari games or continuous states in robotics).
+## 1. Executive Summary
+**Deep Q-Network (DQN)** combines Q-Learning with Deep Neural Networks. While standard Q-Learning uses a table to store values for every state-action pair, DQN uses a neural network to *approximate* these values. This allows it to handle environments with continuous or very large state spaces (like video game pixels or robot sensors) where a table would be impossibly large.
 
 ## 2. Historical Context
-*   **The Inventors:** Developed by **DeepMind** (Volodymyr Mnih et al.) in 2013, with the seminal Nature paper published in 2015.
-*   **The Breakthrough:** It was the first artificial agent capable of learning to excel at a diverse set of challenging tasks (Atari 2600 games) solely from raw pixel inputs, achieving human-level performance. This marked the beginning of the "Deep Reinforcement Learning" era.
+*   **Invention (2013/2015)**: Introduced by **DeepMind** (Mnih et al.) in the paper "Playing Atari with Deep Reinforcement Learning".
+*   **Significance**: It was the first algorithm to demonstrate human-level performance across a wide variety of Atari 2600 games using the *same* architecture and hyperparameters, effectively launching the field of Deep Reinforcement Learning.
 
 ## 3. Real-World Analogy
-### The Gamer Watching Replays
-Imagine a professional gamer learning a new game.
-*   **Playing (Exploration):** Initially, they play randomly to see what happens.
-*   **Replay Buffer (Experience Replay):** Instead of forgetting a game immediately after playing, they record it. Later, they watch recordings of their past games—both wins and losses—to analyze what went right or wrong. This prevents them from forgetting old strategies while learning new ones (breaking correlation).
-*   **Target Network:** It's like having a "Coach" who sets the standard. The Coach doesn't change their mind every second; they keep the criteria stable for a while, then update their standards once the player improves.
+**The Video Game Coach**
+Imagine a coach watching a player play a video game.
+*   **Q-Table**: The coach has a notebook with a page for *every single possible screen* of the game, writing down "Jump" or "Duck". This is impossible for complex games.
+*   **DQN**: The coach learns general rules ("If a goomba is close, jump"). The coach (Neural Network) looks at the screen (State) and predicts how good each button press (Action) would be. It generalizes from similar situations rather than memorizing every pixel configuration.
 
-## 4. Core Concepts
+## 4. Mathematical Foundation
+DQN minimizes the **Temporal Difference (TD) Error** between the predicted Q-value and the target Q-value.
 
-### 4.1 Function Approximation
-Instead of a Q-Table, we use a Neural Network $Q(s, a; \theta)$ to approximate the Q-values.
-- **Input**: State $s$.
-- **Output**: Q-values for all possible actions $a$.
+The Loss Function is:
+$$ L(\theta) = \mathbb{E} \left[ \left( \underbrace{r + \gamma \max_{a'} Q(s', a'; \theta^-)}_{\text{Target}} - \underbrace{Q(s, a; \theta)}_{\text{Prediction}} \right)^2 \right] $$
 
-### 2.2 Experience Replay
-Training a neural network on consecutive samples is unstable because they are highly correlated. DQN stores transitions $(s, a, r, s', done)$ in a **Replay Buffer** and samples random mini-batches for training. This breaks correlations and stabilizes training.
+Where:
+*   $\theta$: Weights of the Policy Network (being trained).
+*   $\theta^-$: Weights of the Target Network (frozen for stability).
+*   $s, a, r, s'$: State, Action, Reward, Next State tuple from the Replay Buffer.
 
-### 2.3 Target Network
-Using the same network to calculate the target value and the predicted value leads to oscillation. DQN uses a separate **Target Network** $\hat{Q}$ with parameters $\theta^-$ that are updated slowly (or periodically) to match the main network $\theta$.
+## 5. Architecture
 
-The loss function becomes:
-$$ L(\theta) = \mathbb{E} \left[ \left( r + \gamma \max_{a'} \hat{Q}(s', a'; \theta^-) - Q(s, a; \theta) \right)^2 \right] $$
+```mermaid
+graph LR
+    State[State Vector] --> InputLayer[Input Layer]
+    InputLayer --> Hidden1[FC Layer + ReLU]
+    Hidden1 --> Hidden2[FC Layer + ReLU]
+    Hidden2 --> OutputLayer[Output Layer]
+    OutputLayer --> QValues[Q-Values (One per Action)]
+    
+    style State fill:#f9f,stroke:#333,stroke-width:2px
+    style QValues fill:#ff9,stroke:#333,stroke-width:2px
+```
 
-## 3. Algorithm Steps
+## 6. Implementation Details
+The repository contains a PyTorch implementation (`01_dqn_cartpole.py`) solving the **CartPole-v1** environment.
 
-1. Initialize Main Network $Q$ and Target Network $\hat{Q}$.
-2. Initialize Replay Buffer.
-3. For each step in environment:
-   - Select action using $\epsilon$-greedy policy.
-   - Execute action, observe reward $r$ and next state $s'$.
-   - Store transition $(s, a, r, s')$ in Replay Buffer.
-   - Sample random batch from Replay Buffer.
-   - Compute targets: $y = r + \gamma \max \hat{Q}(s', a')$.
-   - Update Main Network $Q$ by minimizing loss between $y$ and $Q(s, a)$.
-   - Periodically update Target Network $\hat{Q} \leftarrow Q$.
+*   **Experience Replay**: Stores transitions $(s, a, r, s', done)$ in a buffer. Random batches are sampled for training to break correlation between consecutive steps.
+*   **Target Network**: A separate network used to calculate target values. Its weights are updated to match the policy network only every $N$ steps. This stabilizes training.
+*   **Epsilon-Greedy**: Used for exploration.
+
+## 7. How to Run
+Run the script from the terminal:
+
+```bash
+python 01_dqn_cartpole.py
+```
+
+## 8. Implementation Results
+
+### Training Performance
+The agent solves the environment (Average Reward > 475) within 300 episodes.
+
+![DQN Training Plot](assets/dqn_cartpole.png)
+
+## 9. References
+*   Mnih, V., et al. (2015). *Human-level control through deep reinforcement learning*. Nature.
+*   Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction*.

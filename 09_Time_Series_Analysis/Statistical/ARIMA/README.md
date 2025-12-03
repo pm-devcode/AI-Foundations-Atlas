@@ -1,53 +1,72 @@
-# ARIMA (Autoregressive Integrated Moving Average)
+# ARIMA (AutoRegressive Integrated Moving Average)
 
-## 1. Introduction
-ARIMA is the gold standard for statistical time series forecasting. It models a time series based on its own past values (Autoregression), its own past errors (Moving Average), and ensures stationarity through differencing (Integrated).
+## 1. Executive Summary
+**ARIMA** is the gold standard for statistical time series forecasting. It combines three components: **AR** (AutoRegressive) which uses past values to predict future ones, **I** (Integrated) which handles non-stationarity by differencing the data, and **MA** (Moving Average) which uses past forecast errors. It is best suited for univariate time series with linear relationships.
 
 ## 2. Historical Context
-*   **The Inventors:** George Box and Gwilym Jenkins (1970) in their classic book "Time Series Analysis: Forecasting and Control".
-*   **Significance:** The "Box-Jenkins Method" provided a systematic way to identify, estimate, and check models for time series, dominating the field until the rise of Deep Learning (RNNs/LSTMs).
+*   **Box-Jenkins Method (1970)**: George Box and Gwilym Jenkins formalized the process of identifying, estimating, and checking ARIMA models. Their work made ARIMA the dominant method for decades before the rise of machine learning.
 
 ## 3. Real-World Analogy
-### The Weather Forecaster
-*   **Autoregression (AR):** "It was hot yesterday (30°C) and the day before (29°C), so it will likely be hot today." (Using past values).
-*   **Integrated (I):** "The temperature is rising by 1 degree every day." (Removing the trend to make the series stable/stationary).
-*   **Moving Average (MA):** "Yesterday I predicted 28°C but it was 30°C (Error = +2). I should adjust my prediction today to account for this shock." (Using past forecast errors).
+**Driving a Car**
+*   **AR (AutoRegressive)**: You look in the rear-view mirror. Your position 1 second ago strongly predicts your position now.
+*   **I (Integrated)**: If you are accelerating (non-stationary speed), you look at the *change* in speed (acceleration) to understand the motion.
+*   **MA (Moving Average)**: You adjust your steering based on the "shock" or error you made in the previous second (e.g., a gust of wind pushed you slightly off course).
 
 ## 4. Mathematical Foundation
-An ARIMA(p, d, q) model has three parameters:
-1.  **p (AR order):** Number of lag observations included in the model.
-    $$ Y_t = c + \phi_1 Y_{t-1} + \dots + \phi_p Y_{t-p} + \dots $$
-2.  **d (I order):** Number of times that the raw observations are differenced.
-    $$ Y'_t = Y_t - Y_{t-1} $$
-3.  **q (MA order):** Size of the moving average window (lagged forecast errors).
-    $$ Y_t = \mu + \epsilon_t + \theta_1 \epsilon_{t-1} + \dots + \theta_q \epsilon_{t-q} $$
+An ARIMA(p, d, q) model is defined by:
+*   **p**: Order of the AR part.
+*   **d**: Degree of differencing.
+*   **q**: Order of the MA part.
 
-## 5. Implementation Details
-*   **`01_arima.py`**: Uses the `statsmodels` library to fit an ARIMA model to a synthetic dataset (Trend + AR noise).
-    *   **Data Generation:** Creates a time series with a linear trend and autoregressive noise.
-    *   **ACF/PACF:** Plots Autocorrelation and Partial Autocorrelation functions to help identify p and q.
-    *   **Forecasting:** Predicts future values with confidence intervals.
-    *   **Diagnostics:** Checks residuals to ensure they are white noise (random).
+The equation is:
+$$ Y_t = c + \phi_1 Y_{t-1} + ... + \phi_p Y_{t-p} + \theta_1 \epsilon_{t-1} + ... + \theta_q \epsilon_{t-q} + \epsilon_t $$
+Where $Y_t$ is the differenced series (if $d>0$).
 
-## 6. Limitations
-*   **Linearity:** ARIMA assumes linear relationships. It struggles with complex non-linear patterns (where LSTMs shine).
-*   **Univariate:** Standard ARIMA only uses the time series itself, not external variables (though ARIMAX exists).
+## 5. Architecture
 
-## 7. Results
+```mermaid
+graph LR
+    Raw[Raw Data] --> Diff{Stationarity Check}
+    Diff -- Not Stationary --> Difference[Difference Data (d)]
+    Difference --> Diff
+    Diff -- Stationary --> AR[AutoRegressive (p)]
+    Diff -- Stationary --> MA[Moving Average (q)]
+    AR --> Combine[Combine AR & MA]
+    MA --> Combine
+    Combine --> Forecast[Forecast]
+    
+    style Raw fill:#f9f,stroke:#333,stroke-width:2px
+    style Forecast fill:#9f9,stroke:#333,stroke-width:2px
+```
 
-### Data Analysis
+## 6. Implementation Details
+The repository contains:
+*   `01_arima.py`: Uses `statsmodels.tsa.arima.model.ARIMA`.
+    *   Generates a synthetic time series with trend and seasonality.
+    *   Performs differencing to achieve stationarity.
+    *   Fits an ARIMA model.
+    *   Forecasts future steps.
+
+## 7. How to Run
+Run the script from the terminal:
+
+```bash
+python 01_arima.py
+```
+
+## 8. Implementation Results
+
+### Raw Data
+The synthetic data showing a clear trend and seasonality.
 ![Data](assets/arima_data.png)
-*The synthetic time series showing a clear upward trend.*
 
-### ACF & PACF
+### Diagnostics (ACF/PACF)
+Autocorrelation and Partial Autocorrelation plots used to determine parameters $p$ and $q$.
 ![ACF PACF](assets/arima_acf_pacf.png)
-*Autocorrelation and Partial Autocorrelation plots used to determine the order of AR and MA terms.*
 
 ### Forecast
+The model's prediction (red) vs the actual future values.
 ![Forecast](assets/arima_forecast.png)
-*The model's forecast (red) with confidence intervals (pink) against the observed data.*
 
-### Diagnostics
-![Diagnostics](assets/arima_diagnostics.png)
-*Residual analysis to ensure the model has captured all patterns (residuals should look like white noise).*
-
+## 9. References
+*   Box, G. E., & Jenkins, G. M. (1970). *Time series analysis: forecasting and control*.

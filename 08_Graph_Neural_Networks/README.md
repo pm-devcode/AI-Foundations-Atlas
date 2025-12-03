@@ -1,14 +1,22 @@
-# Graph Neural Networks
+# Graph Neural Networks (GNN)
 
 ## Overview
-Graph Neural Networks (GNNs) are a class of deep learning methods designed to perform inference on data described by graphs. They provide a way to handle non-Euclidean data structures like social networks, molecular structures, and knowledge graphs.
+**Graph Neural Networks (GNNs)** are a class of deep learning methods designed to perform inference on data described by graphs. Unlike standard neural networks that work on Euclidean data (images, text, tabular), GNNs work on non-Euclidean data where the relationships between entities (nodes) are as important as the entities themselves.
 
-## Key Categories
+## Key Concepts
+1.  **Graph Structure**: Defined by $G = (V, E)$, where $V$ is the set of nodes and $E$ is the set of edges.
+2.  **Adjacency Matrix ($A$)**: A matrix representation of the graph connections.
+3.  **Node Features ($X$)**: Attributes associated with each node.
+4.  **Message Passing**: The core mechanism where nodes exchange information with their neighbors to update their own representation (embedding).
 
-### Graph Attention
-Mechanisms that allow the model to weigh the importance of different neighbor nodes.
-*   **GAT (Graph Attention Network)**: Uses attention mechanisms to learn the relative weights between two connected nodes.
+## Directory Structure
+*   **Graph_Convolution**: Methods based on spectral or spatial convolution.
+    *   `GCN_Spectral`: Spectral Graph Convolutional Networks (Kipf & Welling).
+*   **Graph_Attention**: Methods that use attention mechanisms to weigh neighbors.
+    *   `GAT`: Graph Attention Networks (Veličković et al.).
 
-### Graph Convolution
-Generalizing the convolution operation from grid data (images) to graph data.
-*   **GCN_Spectral (Graph Convolutional Network)**: A semi-supervised learning approach on graph-structured data based on an efficient variant of Convolutional Neural Networks.
+## Applications
+*   **Social Network Analysis**: Community detection, link prediction.
+*   **Drug Discovery**: Molecular property prediction.
+*   **Recommendation Systems**: User-item interaction graphs.
+*   **Traffic Forecasting**: Road network modeling.

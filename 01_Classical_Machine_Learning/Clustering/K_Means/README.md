@@ -59,7 +59,37 @@ graph TD
 
 ---
 
-## 6. Implementation Results & Visualization
+## 6. Implementation Details
+*   **Scratch (`00_scratch.py`)**:
+    *   Implements K-Means using NumPy.
+    *   Uses `np.linalg.norm` for distance calculation.
+    *   Iteratively updates centroids until convergence.
+*   **TensorFlow (`01_tensorflow.py`)**:
+    *   Uses `tf.expand_dims` for broadcasting distance calculation.
+    *   Uses `tf.math.unsorted_segment_mean` for efficient centroid updates.
+*   **PyTorch (`02_pytorch.py`)**:
+    *   Uses `torch.cdist` for optimized pairwise distance calculation.
+    *   Uses standard tensor operations for updates.
+
+---
+
+## 7. How to Run
+Run the following commands in your terminal to execute the scripts:
+
+```bash
+# Run the scratch implementation
+python 00_scratch.py
+
+# Run the TensorFlow implementation
+python 01_tensorflow.py
+
+# Run the PyTorch implementation
+python 02_pytorch.py
+```
+
+---
+
+## 8. Implementation Results & Visualization
 
 ### A. The Clusters
 The algorithm successfully separates the data into distinct groups.
@@ -71,12 +101,12 @@ The algorithm successfully separates the data into distinct groups.
 
 | Implementation | Approach | Visualization |
 | :--- | :--- | :--- |
-| **Scratch** | NumPy Loop | [View](assets/kmeans_clusters.png) |
-| **TensorFlow** | Custom Loop with `tf.math` | ![TF Clusters](assets/tf_kmeans.png) |
-| **PyTorch** | Custom Loop with `torch.cdist` | ![PyTorch Clusters](assets/pytorch_kmeans.png) |
+| **Scratch** | NumPy Loop | ![Scratch Result](assets/kmeans_clusters.png) |
+| **TensorFlow** | Custom Loop with `tf.math` | ![TF Result](assets/tf_kmeans.png) |
+| **PyTorch** | Custom Loop with `torch.cdist` | ![PyTorch Result](assets/pytorch_kmeans.png) |
 
 ---
 
-## 7. References
-*   Lloyd, S. (1982). *Least squares quantization in PCM*.
+## 9. References
+*   Lloyd, S. (1982). *Least squares quantization in PCM*. IEEE Transactions on Information Theory.
 *   Steinhaus, H. (1956). *Sur la division des corps matériels en parties*.

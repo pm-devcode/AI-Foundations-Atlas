@@ -58,7 +58,37 @@ graph TD
 
 ---
 
-## 6. Implementation Results & Visualization
+## 6. Implementation Details
+*   **Scratch (`00_scratch.py`)**:
+    *   Implements KNN using NumPy broadcasting for efficient distance calculation.
+    *   Uses `np.argsort` to find nearest neighbors.
+    *   Uses `collections.Counter` for majority voting.
+*   **TensorFlow (`01_tensorflow.py`)**:
+    *   Uses `tf.expand_dims` and broadcasting to calculate the distance matrix.
+    *   Uses `tf.math.top_k` to find the nearest neighbors.
+*   **PyTorch (`02_pytorch.py`)**:
+    *   Uses `torch.cdist` for optimized distance calculation.
+    *   Uses `torch.topk` and `torch.mode` for prediction.
+
+---
+
+## 7. How to Run
+Run the following commands in your terminal to execute the scripts:
+
+```bash
+# Run the scratch implementation
+python 00_scratch.py
+
+# Run the TensorFlow implementation
+python 01_tensorflow.py
+
+# Run the PyTorch implementation
+python 02_pytorch.py
+```
+
+---
+
+## 8. Implementation Results & Visualization
 
 ### A. The Decision Boundary
 KNN creates highly flexible, non-linear decision boundaries.
@@ -71,11 +101,11 @@ Since KNN is instance-based, "training" is instant (0 seconds). The cost is in "
 
 | Implementation | Approach | Visualization |
 | :--- | :--- | :--- |
-| **Scratch** | NumPy Broadcasting & Sorting | [View](assets/knn_boundary.png) |
-| **TensorFlow** | `tf.norm` & `tf.math.top_k` | ![TF Boundary](assets/tf_knn.png) |
-| **PyTorch** | `torch.cdist` & `torch.topk` | ![PyTorch Boundary](assets/pytorch_knn.png) |
+| **Scratch** | NumPy Broadcasting & Sorting | ![Scratch Result](assets/knn_boundary.png) |
+| **TensorFlow** | `tf.norm` & `tf.math.top_k` | ![TF Result](assets/tf_knn.png) |
+| **PyTorch** | `torch.cdist` & `torch.topk` | ![PyTorch Result](assets/pytorch_knn.png) |
 
 ---
 
-## 7. References
+## 9. References
 *   Fix, E., & Hodges, J. L. (1951). *Discriminatory Analysis. Nonparametric Discrimination: Consistency Properties*.

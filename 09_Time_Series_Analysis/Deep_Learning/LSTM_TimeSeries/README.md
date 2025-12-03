@@ -1,41 +1,70 @@
 # LSTM for Time Series Forecasting
 
-## 1. Introduction
-While statistical models like ARIMA are powerful for linear, stationary data, Deep Learning models like Long Short-Term Memory (LSTM) networks excel at capturing complex, non-linear dependencies and long-term patterns in time series data.
+## 1. Executive Summary
+**Long Short-Term Memory (LSTM)** networks are a type of Recurrent Neural Network (RNN) capable of learning order dependence in sequence prediction problems. Unlike standard RNNs, LSTMs have a "memory cell" that can maintain information in memory for long periods of time, making them ideal for time series data where lags of unknown duration matter.
 
-## 2. LSTM vs. ARIMA
-| Feature | ARIMA | LSTM |
-| :--- | :--- | :--- |
-| **Type** | Statistical (Linear) | Deep Learning (Non-Linear) |
-| **Stationarity** | Required (via differencing) | Not strictly required (but helpful) |
-| **Dependencies** | Short-term (lagged values) | Long-term (memory cell) |
-| **Multivariate** | Difficult (ARIMAX) | Native support |
-| **Data Size** | Works well with small data | Requires large data |
+## 2. Historical Context
+*   **Hochreiter & Schmidhuber (1997)**: Introduced LSTM to solve the vanishing gradient problem in traditional RNNs.
+*   **Significance**: LSTMs became the state-of-the-art for sequence modeling (speech recognition, translation, time series) until the Transformer architecture gained popularity in NLP, though LSTMs remain highly effective for numerical time series.
 
 ## 3. Real-World Analogy
-*   **ARIMA (The Accountant):** Predicts next month's budget by looking at the exact numbers from the last 3 months and applying a fixed growth rate. "Last month was \$100, trend is +5%, so next is \$105."
-*   **LSTM (The Trader):** Predicts the stock price by looking at the chart shape over the last year. It recognizes patterns like "head and shoulders" or "double bottom" that aren't just simple linear trends.
+**The Diary**
+*   **Standard RNN**: Like a person with short-term memory loss. They read a sentence but forget the beginning by the time they reach the end.
+*   **LSTM**: Like a person keeping a diary.
+    *   **Forget Gate**: Decides what information from yesterday is no longer relevant (cross it out).
+    *   **Input Gate**: Decides what new information is important enough to write down today.
+    *   **Cell State**: The diary itself, carrying core memories across time.
 
-## 4. Implementation Details
-*   **`01_lstm_ts.py`**: A PyTorch implementation of LSTM for forecasting a synthetic time series (Sine wave + Trend + Noise).
-    *   **Data Preparation:** Sliding window approach (Sequence -> Next Value).
-    *   **Normalization:** MinMax scaling (crucial for Neural Networks).
-    *   **Model:** Single-layer LSTM followed by a Linear layer.
-    *   **Result:** The model successfully learns both the upward trend and the cyclic sine wave pattern.
+## 4. Mathematical Foundation
+The core of LSTM is the cell state $C_t$ and the gates:
+1.  **Forget Gate**: $f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
+2.  **Input Gate**: $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
+3.  **Candidate Update**: $\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+4.  **Cell Update**: $C_t = f_t * C_{t-1} + i_t * \tilde{C}_t$
+5.  **Output Gate**: $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$
+6.  **Hidden State**: $h_t = o_t * \tanh(C_t)$
 
-## 5. Applications
-*   **Stock Price Prediction:** (Though very noisy).
-*   **Energy Consumption:** Predicting grid load.
-*   **Weather Forecasting:** Temperature, rainfall.
-*   **Anomaly Detection:** Predicting normal behavior and flagging deviations.
+## 5. Architecture
 
-## 6. Results
+```mermaid
+graph LR
+    Input[Input Sequence] --> LSTM[LSTM Layer]
+    LSTM --> Dense[Dense Layer]
+    Dense --> Output[Prediction]
+    
+    subgraph "LSTM Cell"
+    Forget[Forget Gate]
+    InputG[Input Gate]
+    OutputG[Output Gate]
+    end
+    
+    style Input fill:#f9f,stroke:#333,stroke-width:2px
+    style Output fill:#9f9,stroke:#333,stroke-width:2px
+```
 
-### Synthetic Data
+## 6. Implementation Details
+The repository contains:
+*   `01_lstm_ts.py`: Uses `torch.nn.LSTM`.
+    *   **Data Preparation**: Converts a time series into a supervised learning problem using a sliding window (lookback).
+    *   **Model**: A simple LSTM followed by a Linear layer.
+    *   **Training**: Optimizes Mean Squared Error.
+
+## 7. How to Run
+Run the script from the terminal:
+
+```bash
+python 01_lstm_ts.py
+```
+
+## 8. Implementation Results
+
+### Data
+The sine wave data used for training.
 ![Data](assets/lstm_data.png)
-*The input time series combining a linear trend, a sine wave, and random noise.*
 
 ### Forecast
+The LSTM's prediction (red) closely tracks the actual sine wave (blue), demonstrating its ability to learn periodic patterns.
 ![Forecast](assets/lstm_forecast.png)
-*The LSTM's prediction on the test set (orange dashed line) closely follows the true values (green line), capturing both the trend and the seasonality.*
 
+## 9. References
+*   Hochreiter, S., & Schmidhuber, J. (1997). *Long short-term memory*. Neural computation.

@@ -1,41 +1,75 @@
 # Graph Attention Networks (GAT)
 
-## 1. Introduction
-Graph Attention Networks (GATs) improve upon GCNs by introducing the **Attention Mechanism** to graphs. While GCNs treat all neighbors as equally important (or determined solely by graph structure), GATs learn to assign different importance weights (attention coefficients) to different neighbors.
+## 1. Executive Summary
+**Graph Attention Networks (GATs)** improve upon GCNs by introducing an **attention mechanism**. Instead of treating all neighbors as equal (or normalizing by degree), GAT learns to assign different "importance weights" to different neighbors. This allows the model to focus on the most relevant parts of the graph structure for the task at hand.
 
 ## 2. Historical Context
-*   **The Inventors:** Petar Veličković et al. (2018) in the paper "Graph Attention Networks".
-*   **The Motivation:** GCNs depend on the fixed graph structure (Laplacian). GATs allow the model to focus on the most relevant neighbors for a specific task, making them more flexible and capable of inductive learning (generalizing to unseen graphs).
+*   **Attention Mechanisms (2014-2017)**: Revolutionized NLP (Bahdanau et al., Transformer by Vaswani et al.).
+*   **Veličković et al. (2017)**: Introduced GAT, bringing the power of attention to graph data. It solved the issue of GCNs relying on a fixed graph structure and allowed for inductive learning.
 
 ## 3. Real-World Analogy
-### The Selective Listener
-*   **GCN (The Democrat):** You ask all your friends for advice and take the exact average of their opinions.
-*   **GAT (The Strategist):** You ask all your friends. You know Alice is an expert in this topic, so you give her opinion 80% weight. Bob knows nothing, so you give him 5%. You synthesize a final decision based on this weighted advice.
+**The Cocktail Party**
+*   **GCN**: You are at a party and you listen to everyone around you equally to form an opinion. It's noisy and you might hear irrelevant chatter.
+*   **GAT**: You are at the same party, but you focus your attention (hearing) specifically on the experts or the people you trust. You ignore the background noise. You weigh the input of your "neighbors" based on how relevant they are to you.
 
 ## 4. Mathematical Foundation
-1.  **Linear Transformation:** Apply $W$ to every node feature $\vec{h}$.
-2.  **Attention Mechanism:** Compute importance of node $j$ to node $i$:
-    $$ e_{ij} = \text{LeakyReLU}(\vec{a}^T [W\vec{h}_i || W\vec{h}_j]) $$
-3.  **Normalization (Softmax):**
-    $$ \alpha_{ij} = \frac{\exp(e_{ij})}{\sum_{k \in \mathcal{N}_i} \exp(e_{ik})} $$
-4.  **Aggregation:**
-    $$ \vec{h}'_i = \sigma\left( \sum_{j \in \mathcal{N}_i} \alpha_{ij} W\vec{h}_j \right) $$
+The attention coefficient $e_{ij}$ indicates the importance of node $j$'s features to node $i$:
+$$ e_{ij} = \text{LeakyReLU}(\vec{a}^T [W \vec{h}_i || W \vec{h}_j]) $$
+*   $W$: Weight matrix applied to every node.
+*   $||$: Concatenation operation.
+*   $\vec{a}$: Attention vector.
 
-## 5. Implementation Details
-*   **`00_scratch.py`**: A NumPy simulation of the attention mechanism for a single node and its neighbors. It visualizes how the attention weights ($\alpha$) are distributed.
-*   **`01_pytorch.py`**: A PyTorch implementation of a GAT layer applied to the Karate Club dataset. It demonstrates that GAT can also solve the semi-supervised classification task effectively.
+These coefficients are normalized using Softmax:
+$$ \alpha_{ij} = \text{softmax}_j(e_{ij}) = \frac{\exp(e_{ij})}{\sum_{k \in \mathcal{N}_i} \exp(e_{ik})} $$
 
-## 6. Advantages over GCN
-*   **Weighted Neighbors:** Can ignore noisy neighbors.
-*   **Inductive Learning:** Doesn't require the full graph Laplacian during training; can work on dynamic graphs.
+The final output feature for node $i$ is a weighted sum:
+$$ \vec{h}'_i = \sigma \left( \sum_{j \in \mathcal{N}_i} \alpha_{ij} W \vec{h}_j \right) $$
 
-## 7. Results
+## 5. Architecture
 
-### Attention Coefficients (Scratch)
-![Attention Weights](assets/scratch_gat_attention.png)
-*Visualization of the attention weights assigned by Node 0 to its neighbors. Unlike GCN, these weights are learned and data-dependent.*
+```mermaid
+graph TD
+    NodeI[Node i Features] --> Linear[Linear Transform W]
+    NodeJ[Neighbor j Features] --> Linear
+    Linear --> Concat[Concatenate]
+    Concat --> AttnVec[Attention Vector a]
+    AttnVec --> Leaky[LeakyReLU]
+    Leaky --> Softmax[Softmax over Neighbors]
+    Softmax --> Weights[Attention Weights alpha]
+    Weights --> Agg[Weighted Sum]
+    Agg --> Output[New Node i Features]
+    
+    style Output fill:#9f9,stroke:#333,stroke-width:2px
+```
 
-### Karate Club Embeddings (PyTorch)
-![GAT Karate](assets/pytorch_gat_karate.png)
-*The GAT model also successfully separates the two communities, often producing cleaner boundaries than GCN due to the ability to weigh edges differently.*
+## 6. Implementation Details
+The repository contains two implementations:
 
+1.  `00_scratch.py`: Implements the attention mechanism math from scratch using NumPy.
+2.  `01_pytorch.py`: Uses PyTorch to implement a GAT layer on the **Zachary's Karate Club** dataset.
+
+## 7. How to Run
+Run the scripts from the terminal:
+
+```bash
+# Run the scratch implementation
+python 00_scratch.py
+
+# Run the PyTorch implementation
+python 01_pytorch.py
+```
+
+## 8. Implementation Results
+
+### Attention Weights (Scratch)
+The visualization shows the attention matrix, indicating which nodes are attending to which other nodes.
+
+![Attention Matrix](assets/scratch_gat_attention.png)
+
+### Karate Club Classification (PyTorch)
+The GAT model successfully separates the club members.
+
+![PyTorch GAT](assets/pytorch_gat_karate.png)
+
+## 9. References
+*   Veličković, P., Cucurull, G., Casanova, A., Romero, A., Lio, P., & Bengio, Y. (2017). *Graph Attention Networks*. ICLR.

@@ -1,50 +1,76 @@
-# Graph Convolutional Networks (GCN)
+# Spectral Graph Convolutional Networks (GCN)
 
-## 1. Introduction
-Graph Convolutional Networks (GCNs) are a powerful type of neural network designed to work directly on graph-structured data (social networks, molecular structures, citation networks). Unlike standard CNNs which operate on regular grids (images), GCNs operate on irregular connections.
+## 1. Executive Summary
+**Graph Convolutional Networks (GCNs)** generalize the operation of convolution from traditional image processing to graph-structured data. The "Spectral" approach relies on the Eigen-decomposition of the graph Laplacian to define convolution in the Fourier domain. In practice, we use an efficient approximation (Chebyshev polynomials or the First-Order approximation proposed by Kipf & Welling) to avoid expensive matrix computations.
 
 ## 2. Historical Context
-*   **The Inventors:** Thomas Kipf and Max Welling (2017) in their paper "Semi-Supervised Classification with Graph Convolutional Networks".
-*   **The Breakthrough:** They introduced a simple and efficient layer-wise propagation rule that approximated spectral graph convolutions. This made it feasible to train deep networks on large graphs, sparking the GNN explosion.
+*   **Spectral Graph Theory**: The mathematical foundation connecting graph properties to the eigenvalues of the Laplacian matrix.
+*   **Bruna et al. (2013)**: First formulation of spectral graph convolutions.
+*   **Kipf & Welling (2016)**: Introduced the famous "Semi-Supervised Classification with Graph Convolutional Networks", simplifying the spectral convolution to a localized first-order approximation, making GNNs scalable.
 
 ## 3. Real-World Analogy
-### The Rumor Mill
+**The Rumor Mill**
 Imagine a social network.
-*   **Node Features:** Each person has some opinions (features).
-*   **Graph Convolution:** In each step, every person updates their opinion by taking the average of their friends' opinions (Aggregation) and then processing it with their own logic (Transformation).
-*   **Deep GCN:** After several steps (layers), you are influenced not just by your friends, but by your friends' friends, and so on. Information propagates through the network.
+*   **Node**: A person.
+*   **Feature**: The person's opinion.
+*   **Convolution**: To update your opinion, you average the opinions of all your friends (neighbors) and yourself.
+*   **Layers**:
+    *   Layer 1: You know what your friends think.
+    *   Layer 2: You know what your friends' friends think.
+    *   Layer K: You aggregate information from K-hops away.
 
 ## 4. Mathematical Foundation
-The core propagation rule for a GCN layer is:
-
-$$ H^{(l+1)} = \sigma\left( \tilde{D}^{-\frac{1}{2}} \tilde{A} \tilde{D}^{-\frac{1}{2}} H^{(l)} W^{(l)} \right) $$
-
-Where:
-*   $\tilde{A} = A + I$: Adjacency matrix with self-loops (so you don't forget your own features).
+The layer-wise propagation rule for GCN is:
+$$ H^{(l+1)} = \sigma(\tilde{D}^{-\frac{1}{2}} \tilde{A} \tilde{D}^{-\frac{1}{2}} H^{(l)} W^{(l)}) $$
+*   $\tilde{A} = A + I_N$: Adjacency matrix with self-loops.
 *   $\tilde{D}$: Degree matrix of $\tilde{A}$.
-*   $\tilde{D}^{-\frac{1}{2}} \tilde{A} \tilde{D}^{-\frac{1}{2}}$: Symmetric normalized adjacency matrix. It ensures that nodes with many neighbors don't explode in value (averaging instead of summing).
-*   $H^{(l)}$: Matrix of node features at layer $l$.
-*   $W^{(l)}$: Learnable weight matrix.
+*   $H^{(l)}$: Matrix of activations in the $l$-th layer.
+*   $W^{(l)}$: Trainable weight matrix.
 *   $\sigma$: Activation function (e.g., ReLU).
 
-## 5. Implementation Details
-*   **`00_scratch.py`**: A NumPy implementation of the GCN propagation rule. It creates a tiny 4-node graph and demonstrates how features are aggregated and transformed.
-*   **`01_pytorch.py`**: A PyTorch implementation applied to **Zachary's Karate Club** dataset.
-    *   **Task:** Semi-supervised classification. We only label the Instructor and the Administrator.
-    *   **Result:** The GCN learns to cluster all other members correctly based on the graph structure alone, even without rich node features.
+## 5. Architecture
 
-## 6. Applications
-*   **Social Networks:** Friend recommendation, fake news detection.
-*   **Chemistry:** Predicting molecular properties (drug discovery).
-*   **Recommender Systems:** Pinterest's PinSage.
+```mermaid
+graph LR
+    Input[Input Graph Features X] --> GCN1[GCN Layer 1]
+    GCN1 --> ReLU1[ReLU Activation]
+    ReLU1 --> GCN2[GCN Layer 2]
+    GCN2 --> Softmax[Softmax / Output]
+    Softmax --> Class[Node Classification]
+    
+    style Input fill:#f9f,stroke:#333,stroke-width:2px
+    style Class fill:#9f9,stroke:#333,stroke-width:2px
+```
 
-## 7. Results
+## 6. Implementation Details
+The repository contains two implementations:
 
-### Graph Structure & Embedding (Scratch)
-![GCN Scratch](assets/scratch_gcn.png)
-*Left: The input graph structure. Right: The output feature space after 2 GCN layers. Structurally similar nodes are mapped close together.*
+1.  `00_scratch.py`: Implements the spectral graph convolution math using NumPy. It calculates the Laplacian, eigenvectors, and performs convolution in the spectral domain.
+2.  `01_pytorch.py`: Uses PyTorch to implement the Kipf & Welling GCN layer on the **Zachary's Karate Club** dataset.
+
+## 7. How to Run
+Run the scripts from the terminal:
+
+```bash
+# Run the scratch implementation
+python 00_scratch.py
+
+# Run the PyTorch implementation
+python 01_pytorch.py
+```
+
+## 8. Implementation Results
+
+### Spectral Filtering (Scratch)
+The plot shows the signal on the graph before and after applying a spectral filter (heat kernel).
+
+![Spectral GCN](assets/scratch_gcn.png)
 
 ### Karate Club Classification (PyTorch)
-![GCN Karate](assets/pytorch_gcn_karate.png)
-*Left: Training loss. Right: Learned node embeddings. The model successfully separates the two factions (Mr. Hi vs. Officer) using only the graph structure and two labeled nodes.*
+The GCN learns to classify the members of the Karate Club into factions based on the network structure.
 
+![PyTorch GCN](assets/pytorch_gcn_karate.png)
+
+## 9. References
+*   Kipf, T. N., & Welling, M. (2016). *Semi-supervised classification with graph convolutional networks*. ICLR.
+*   Hammond, D. K., et al. (2011). *Wavelets on graphs via spectral graph theory*.

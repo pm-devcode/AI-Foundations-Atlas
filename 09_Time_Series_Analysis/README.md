@@ -1,14 +1,22 @@
 # Time Series Analysis
 
 ## Overview
-Time Series Analysis involves methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. It is widely used in forecasting, signal processing, and econometrics.
+**Time Series Analysis** involves methods for analyzing time series data in order to extract meaningful statistics and other characteristics of the data. **Time Series Forecasting** is the use of a model to predict future values based on previously observed values.
 
-## Key Categories
+## Key Concepts
+1.  **Trend**: A long-term increase or decrease in the data.
+2.  **Seasonality**: A pattern that repeats at regular intervals (e.g., daily, monthly).
+3.  **Stationarity**: A property where the statistical properties of the series (mean, variance) do not change over time. Many models (like ARIMA) require the data to be stationary.
+4.  **Autocorrelation**: The correlation of a series with a delayed copy of itself.
 
-### Deep Learning
-Using neural networks to capture complex temporal dependencies.
-*   **LSTM_TimeSeries**: Long Short-Term Memory networks are well-suited for classifying, processing and making predictions based on time series data.
+## Directory Structure
+*   **Statistical**: Traditional statistical methods.
+    *   `ARIMA`: AutoRegressive Integrated Moving Average.
+*   **Deep_Learning**: Modern neural network approaches.
+    *   `LSTM_TimeSeries`: Long Short-Term Memory networks for sequence prediction.
 
-### Statistical
-Traditional statistical methods for modeling and forecasting.
-*   **ARIMA**: AutoRegressive Integrated Moving Average is a class of models that explains a given time series based on its own past values, that is, its own lags and the lagged forecast errors.
+## Applications
+*   **Finance**: Stock price prediction, algorithmic trading.
+*   **Weather**: Temperature and precipitation forecasting.
+*   **Energy**: Electricity demand forecasting.
+*   **Sales**: Inventory planning and revenue projection.

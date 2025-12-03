@@ -1,52 +1,80 @@
 # Q-Learning (Tabular)
 
-## 1. Introduction
-Q-Learning is a model-free reinforcement learning algorithm to learn the value of an action in a particular state. It does not require a model of the environment (hence "model-free"), and it can handle problems with stochastic transitions and rewards without requiring adaptations.
+## 1. Executive Summary
+**Q-Learning** is a foundational model-free reinforcement learning algorithm. It enables an agent to learn the optimal action-selection policy for any given state by interacting with the environment. It works by learning a **Q-Function** (Quality Function) that estimates the expected total future reward for taking a specific action in a specific state. For simple environments with discrete states, this function is stored as a lookup table (Q-Table).
 
 ## 2. Historical Context
-*   **The Inventor:** Introduced by **Chris Watkins** in his 1989 PhD thesis, "Learning from Delayed Rewards".
-*   **Significance:** It was a breakthrough because it proved that an agent could learn the optimal policy without modeling the environment's transition probabilities, bridging the gap between dynamic programming and trial-and-error learning.
+*   **Invention (1989)**: Introduced by **Chris Watkins** in his PhD thesis "Learning from Delayed Rewards".
+*   **Significance**: It was a breakthrough because it proved that an agent could learn the optimal policy *off-policy* (learning from actions that are not necessarily the ones the current policy would choose) and without a model of the environment's physics (transition probabilities).
 
 ## 3. Real-World Analogy
-### The Dog Training
+**The Dog Training**
 Imagine you are training a dog to "sit".
-*   **The Agent:** The dog.
-*   **The State:** You saying "Sit!".
-*   **The Action:** The dog sits, jumps, or barks.
-*   **The Reward:** If the dog sits, it gets a treat (+1). If it barks, it gets nothing (0) or a "No!" (-1).
-*   **Q-Learning:** Over time, the dog learns that in the state "Command: Sit", the action "Sit" has the highest expected future reward (the treat). It doesn't know *why* (physics of sitting), but it knows the value of the action.
+*   **The Agent**: The dog.
+*   **The State**: You saying "Sit!".
+*   **The Action**: The dog sits, jumps, or barks.
+*   **The Reward**: If the dog sits, it gets a treat (+1). If it barks, it gets nothing (0) or a "No!" (-1).
+*   **Q-Learning**: Over time, the dog learns that in the state "Command: Sit", the action "Sit" has the highest expected future reward (the treat). It doesn't know *why* (physics of sitting), but it knows the value of the action.
 
-## 4. Core Concepts
+## 4. Mathematical Foundation
+The core of the algorithm is the **Bellman Equation** update rule:
 
-### 4.1 The Q-Table
-The core of the algorithm is the **Q-Table**, a matrix where:
-- **Rows** represent States ($S$).
-- **Columns** represent Actions ($A$).
-- Each cell $Q(s, a)$ stores the expected future reward for taking action $a$ in state $s$.
-
-### 2.2 The Bellman Equation
-The Q-values are updated using the Bellman equation:
-
-$$ Q^{new}(s_t, a_t) \leftarrow \underbrace{Q(s_t, a_t)}_{\text{current value}} + \underbrace{\alpha}_{\text{learning rate}} \cdot \left( \underbrace{r_t}_{\text{reward}} + \underbrace{\gamma}_{\text{discount factor}} \cdot \underbrace{\max_{a} Q(s_{t+1}, a)}_{\text{estimate of optimal future value}} - \underbrace{Q(s_t, a_t)}_{\text{current value}} \right) $$
+$$ Q^{new}(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \cdot \left( r_t + \gamma \cdot \max_{a} Q(s_{t+1}, a) - Q(s_t, a_t) \right) $$
 
 Where:
-- $\alpha$ (Alpha): Learning rate (0 to 1). How much we override old information.
-- $\gamma$ (Gamma): Discount factor (0 to 1). Importance of future rewards.
-- $r_t$: Reward received after taking action $a_t$.
+*   $Q(s_t, a_t)$: Current estimated value of taking action $a$ in state $s$.
+*   $\alpha$ (Alpha): Learning rate (0 to 1). How much we accept the new information.
+*   $r_t$: Immediate reward received.
+*   $\gamma$ (Gamma): Discount factor (0 to 1). How much we care about future rewards vs. immediate rewards.
+*   $\max_{a} Q(s_{t+1}, a)$: The estimated value of the best action in the *next* state (our "target").
 
-### 2.3 Exploration vs. Exploitation ($\epsilon$-Greedy)
-To learn effectively, the agent must balance:
-- **Exploration**: Trying random actions to discover new states ($\epsilon$ probability).
-- **Exploitation**: Choosing the best known action from the Q-Table ($1 - \epsilon$ probability).
+## 5. Architecture (The Q-Table)
 
-## 3. Algorithm Steps
+For a GridWorld of size 4x4 with 4 possible actions (Up, Down, Left, Right), the Q-Table is a matrix of size 16x4.
 
-1. Initialize Q-Table with zeros.
-2. For each episode:
-   - Reset state $S$.
-   - Loop until terminal state:
-     - Choose action $A$ using $\epsilon$-greedy policy.
-     - Take action $A$, observe reward $R$ and new state $S'$.
-     - Update $Q(S, A)$ using the Bellman equation.
-     - Set $S \leftarrow S'$.
-3. Decay $\epsilon$ to reduce exploration over time.
+```mermaid
+graph TD
+    State[State s] --> Lookup[Lookup in Q-Table]
+    Lookup --> QValues[Q-Values for all Actions]
+    QValues --> Policy{Policy (e.g., Epsilon-Greedy)}
+    Policy -- Explore --> Random[Random Action]
+    Policy -- Exploit --> Max[Action with Max Q-Value]
+    
+    style Lookup fill:#f9f,stroke:#333,stroke-width:2px
+    style QValues fill:#ff9,stroke:#333,stroke-width:2px
+```
+
+## 6. Implementation Details
+The repository contains a Python implementation (`01_q_learning.py`) for a custom **GridWorld** environment:
+
+*   **Environment**: A 4x4 grid with a Start, a Goal (+1 reward), and Holes (-1 reward).
+*   **Agent**: Uses a Q-Table to store values.
+*   **Epsilon-Greedy Strategy**:
+    *   With probability $\epsilon$, choose a random action (Explore).
+    *   With probability $1-\epsilon$, choose the best action from the Q-Table (Exploit).
+    *   $\epsilon$ decays over time, shifting the agent from exploration to exploitation.
+
+## 7. How to Run
+Run the script from the terminal:
+
+```bash
+python 01_q_learning.py
+```
+
+## 8. Implementation Results
+
+### Learned Policy
+After training for 1000 episodes, the agent learns to navigate around holes to reach the goal.
+
+```text
+Learned Policy (Grid):
+| ↓ | ← | ↓ | ← |
+| ↓ | H | ↓ | H |
+| → | → | ↓ | H |
+| H | → | → | G |
+```
+*(Arrows indicate the optimal action to take in each cell. H = Hole, G = Goal)*
+
+## 9. References
+*   Watkins, C. J. C. H. (1989). *Learning from Delayed Rewards*. PhD Thesis, Cambridge University.
+*   Sutton, R. S., & Barto, A. G. (2018). *Reinforcement Learning: An Introduction*.

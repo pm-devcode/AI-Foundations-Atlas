@@ -17,3 +17,6 @@ The current state-of-the-art for image generation.
 ### GANs (Generative Adversarial Networks)
 A game-theoretic approach where two networks compete.
 *   **DCGAN (Deep Convolutional GAN)**: Using CNNs in the Generator and Discriminator to generate realistic images.
+
+## Note on Text Generation
+For Generative Large Language Models (LLMs) like GPT, please refer to the **Natural Language Processing** section under **Transformers**.

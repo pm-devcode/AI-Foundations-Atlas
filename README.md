@@ -37,7 +37,7 @@ Teaching machines to understand and generate text.
 *   **Embeddings**: Word2Vec.
 *   **Tokenization**: Byte Pair Encoding (BPE).
 *   **Sequence Models**: RNN, LSTM, Seq2Seq with Attention.
-*   **Transformers**: Self-Attention Mechanism (The "Transformer" core).
+*   **Transformers**: Self-Attention Mechanism (The "Transformer" core), Simple GPT (Mini-LLM).
 
 ### 05. Generative AI
 Creating new data distributions.

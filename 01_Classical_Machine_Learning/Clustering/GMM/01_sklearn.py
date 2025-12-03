@@ -44,7 +44,7 @@ def draw_ellipse(position, covariance, ax=None, **kwargs):
     # Draw the Ellipse
     for nsig in range(1, 4):
         ax.add_patch(Ellipse(position, nsig * width, nsig * height,
-                             angle, **kwargs))
+                             angle=angle, **kwargs))
 
 ax = plt.gca()
 for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):

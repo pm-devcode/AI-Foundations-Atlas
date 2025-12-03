@@ -1,38 +1,80 @@
 # Classical Machine Learning
 
-## Overview
-Classical Machine Learning refers to the generation of algorithms developed largely before the "Deep Learning revolution" (pre-2012). These methods are rooted heavily in statistics, linear algebra, and optimization theory. They remain the industry standard for tabular data and scenarios requiring high interpretability.
+## 1. Overview
+**Classical Machine Learning** encompasses the foundational algorithms developed largely before the Deep Learning revolution (pre-2012). Rooted in statistics, linear algebra, and optimization theory, these methods remain the industry standard for tabular data, small-to-medium datasets, and applications requiring high interpretability. Unlike "Black Box" deep neural networks, the decision boundaries and logic of these models are often transparent and mathematically provable.
 
-## Key Categories
+## 2. Directory Structure
 
-### Anomaly Detection
-Identifying rare items, events or observations.
-*   **Isolation Forest**: Explicitly isolates anomalies rather than profiling normal data points.
+```text
+01_Classical_Machine_Learning/
+├── Anomaly_Detection/
+│   └── Isolation_Forest/       # Anomaly detection using random partitioning
+├── Classification_Advanced/
+│   ├── KNN/                    # K-Nearest Neighbors (Instance-based learning)
+│   ├── Naive_Bayes/            # Probabilistic classifiers based on Bayes' Theorem
+│   └── SVM/                    # Support Vector Machines (Max-margin hyperplanes)
+├── Clustering/
+│   ├── DBSCAN/                 # Density-based clustering (handles noise)
+│   ├── GMM/                    # Gaussian Mixture Models (Probabilistic soft clustering)
+│   └── K_Means/                # Centroid-based hard clustering
+├── Dimensionality_Reduction/
+│   ├── LDA/                    # Linear Discriminant Analysis (Supervised)
+│   └── PCA/                    # Principal Component Analysis (Unsupervised)
+├── Ensemble_Methods/
+│   ├── Decision_Trees/         # Single tree-based models
+│   ├── Gradient_Boosting/      # Sequential boosting (e.g., XGBoost foundations)
+│   └── Random_Forest/          # Parallel bagging of trees
+└── Regression/
+    ├── Linear_Regression_Simple/ # Univariate linear regression
+    └── Logistic_Regression/      # Binary classification using sigmoid
+```
 
-### Classification
-Predicting discrete labels.
-*   **KNN (K-Nearest Neighbors)**: Instance-based learning. "Tell me who your friends are, and I'll tell you who you are."
-*   **Naive Bayes**: Probabilistic classifiers based on Bayes' theorem with strong independence assumptions.
-*   **SVM (Support Vector Machines)**: Finding the optimal hyperplane that maximizes the margin between classes.
+## 3. Key Concepts & Modules
 
-### Clustering
-Unsupervised grouping of data.
-*   **DBSCAN**: Density-based clustering that can find arbitrarily shaped clusters and outliers.
-*   **GMM (Gaussian Mixture Models)**: Probabilistic clustering assuming data is generated from a mixture of Gaussian distributions.
-*   **K-Means**: Partitioning data into K distinct clusters based on distance to centroids.
-
-### Dimensionality Reduction
-Reducing the number of random variables under consideration.
-*   **LDA (Linear Discriminant Analysis)**: Finding a linear combination of features that characterizes or separates two or more classes.
-*   **PCA (Principal Component Analysis)**: Projecting data onto orthogonal axes of maximum variance.
-
-### Ensemble Methods
-Combining multiple models to improve performance.
-*   **Decision Trees**: Flowchart-like structures for decision making.
-*   **Gradient Boosting**: Boosting method that builds trees sequentially to correct errors of previous trees.
-*   **Random Forests**: Bagging method using many decorrelated trees.
-
-### Regression
+### A. Regression
 Predicting continuous values.
-*   **Linear Regression**: The "Hello World" of ML. Fitting a line to data.
-*   **Logistic Regression**: Despite the name, used for binary classification.
+*   **Linear Regression**: The "Hello World" of ML. Fits a straight line to data by minimizing Mean Squared Error.
+*   **Logistic Regression**: Used for binary classification. Estimates probabilities using the Sigmoid function.
+
+### B. Classification
+Predicting discrete class labels.
+*   **KNN**: A "lazy" learner that classifies based on the majority vote of the nearest neighbors.
+*   **Naive Bayes**: Fast, probabilistic classifiers that assume feature independence. Great for text.
+*   **SVM**: Finds the optimal hyperplane that maximizes the margin between classes. Uses kernels for non-linear data.
+
+### C. Clustering
+Unsupervised grouping of similar data points.
+*   **K-Means**: Partitions data into $K$ spherical clusters. Fast but sensitive to outliers.
+*   **DBSCAN**: Groups points in high-density regions. Can find arbitrary shapes and ignore noise.
+*   **GMM**: Assumes data is generated from a mixture of Gaussian distributions. Provides "soft" cluster assignments.
+
+### D. Dimensionality Reduction
+Reducing the number of variables while preserving information.
+*   **PCA**: Unsupervised. Projects data onto orthogonal axes (Principal Components) that maximize variance.
+*   **LDA**: Supervised. Finds axes that maximize class separation.
+
+### E. Ensemble Methods
+Combining multiple weak models to create a strong one.
+*   **Decision Trees**: Simple, interpretable flowcharts. Prone to overfitting.
+*   **Random Forest**: A "Bagging" ensemble that averages many decision trees to reduce variance and overfitting.
+*   **Gradient Boosting**: A "Boosting" ensemble that builds trees sequentially, where each tree corrects the errors of the previous one.
+
+### F. Anomaly Detection
+Identifying rare events or outliers.
+*   **Isolation Forest**: Detects anomalies by randomly splitting data. Anomalies are easier to isolate (require fewer splits) than normal points.
+
+## 4. Prerequisites
+To fully understand these modules, familiarity with the following is recommended:
+*   **Linear Algebra**: Vectors, Matrices, Dot Products, Eigenvalues/Eigenvectors (for PCA).
+*   **Calculus**: Derivatives, Gradients (for Gradient Descent).
+*   **Statistics**: Mean, Variance, Covariance, Probability Distributions (Gaussian).
+*   **Python**: NumPy, Pandas, Matplotlib.
+
+## 5. How to Use This Section
+Each sub-directory contains:
+1.  **README.md**: Detailed explanation, math, and analogies.
+2.  **`00_scratch.py`**: Implementation from first principles (NumPy only).
+3.  **`01_sklearn.py` / `01_tensorflow.py` / `02_pytorch.py`**: Reference implementations using popular libraries.
+4.  **`assets/`**: Visualizations generated by the scripts.
+
+Start by running the `scratch` scripts to understand the internal mechanics, then move to the library implementations to see best practices.
