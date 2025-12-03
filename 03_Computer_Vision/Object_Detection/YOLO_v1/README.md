@@ -1,42 +1,84 @@
 # YOLO v1 (You Only Look Once)
 
-## 1. Concept
-YOLO is a unified architecture for object detection. Unlike prior systems (R-CNN) that repurpose classifiers to perform detection, YOLO frames object detection as a **regression problem** to spatially separated bounding boxes and associated class probabilities.
+## 1. Executive Summary
+**YOLO (You Only Look Once)** is a unified architecture for real-time object detection. Unlike prior systems (like R-CNN) that repurpose classifiers to perform detection by running them on thousands of region proposals, YOLO frames object detection as a single **regression problem**. It predicts bounding boxes and class probabilities directly from full images in one evaluation, making it extremely fast (45 fps on a Titan X GPU in 2015).
 
-### Key Idea: The Grid
-*   The input image is divided into an $S \times S$ grid.
-*   If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
-*   Each grid cell predicts $B$ bounding boxes and confidence scores for those boxes.
-*   Each grid cell also predicts $C$ conditional class probabilities.
+## 2. Historical Context
+Proposed by **Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi** in **2015**. Before YOLO, the state-of-the-art was **Faster R-CNN**, which was accurate but slow due to its two-stage nature (Region Proposal Network + Classifier). YOLO sacrificed a small amount of accuracy (especially on small objects) for a massive gain in speed, enabling real-time applications like video analysis and autonomous driving.
 
-## 2. Architecture
-The network is inspired by GoogLeNet.
-*   **Input**: $448 \times 448 \times 3$ image.
-*   **Output**: $S \times S \times (B \times 5 + C)$ tensor.
-    *   For PASCAL VOC: $S=7, B=2, C=20$.
-    *   Output size: $7 \times 7 \times 30$.
+## 3. Real-World Analogy
+*   **R-CNN (Old Way)**: Like a security guard checking every single person in a crowd individually to see if they are on a watchlist. Very thorough, but very slow.
+*   **YOLO (New Way)**: Like a security guard glancing at the entire crowd at once and immediately pointing out "There's a person there, a bag there, and a car there". It's a holistic, instant assessment.
 
-### Output Tensor Structure (per cell)
-Each cell outputs a vector of length 30:
-*   **Indices 0-19**: Class probabilities (20 classes).
-*   **Indices 20-24**: Bounding Box 1 ($P_c, x, y, w, h$).
-*   **Indices 25-29**: Bounding Box 2 ($P_c, x, y, w, h$).
+## 4. Mathematical Foundation
 
-## 3. Loss Function
-The loss function is a sum of squared errors, but weighted to handle the class imbalance (many background cells).
+### 4.1 The Grid System
+The input image is divided into an $S \times S$ grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
 
-$$ \lambda_{coord} \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathbb{1}_{ij}^{obj} [(x_i - \hat{x}_i)^2 + (y_i - \hat{y}_i)^2] $$
-$$ + \lambda_{coord} \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathbb{1}_{ij}^{obj} [(\sqrt{w_i} - \sqrt{\hat{w}_i})^2 + (\sqrt{h_i} - \sqrt{\hat{h}_i})^2] $$
-$$ + \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathbb{1}_{ij}^{obj} (C_i - \hat{C}_i)^2 $$
-$$ + \lambda_{noobj} \sum_{i=0}^{S^2} \sum_{j=0}^{B} \mathbb{1}_{ij}^{noobj} (C_i - \hat{C}_i)^2 $$
-$$ + \sum_{i=0}^{S^2} \mathbb{1}_{i}^{obj} \sum_{c \in classes} (p_i(c) - \hat{p}_i(c))^2 $$
+### 4.2 Output Tensor
+Each grid cell predicts $B$ bounding boxes and $C$ conditional class probabilities.
+The output tensor size is $S \times S \times (B \times 5 + C)$.
+For PASCAL VOC ($S=7, B=2, C=20$), the output is $7 \times 7 \times 30$.
 
-## 4. Implementation Details
-*   **`00_model.py`**: Contains the full PyTorch implementation of the YOLO v1 architecture and the custom Loss function.
-*   **Note**: Training this model requires a large dataset (PASCAL VOC) and significant compute. This implementation serves as an architectural reference.
+Each bounding box consists of 5 predictions: $x, y, w, h, \text{confidence}$.
+*   $(x, y)$: Center of the box relative to the bounds of the grid cell.
+*   $(w, h)$: Width and height relative to the whole image.
+*   $\text{confidence}$: $\text{Pr(Object)} \times \text{IOU}_{\text{pred}}^{\text{truth}}$.
 
-## 5. How to Run
+### 4.3 Loss Function
+A multi-part loss function (Sum-Squared Error) that combines:
+1.  **Coordinate Loss**: Penalizes errors in box position/size. (Weighted higher, $\lambda_{coord}=5$).
+2.  **Object Loss**: Penalizes confidence error if an object is present.
+3.  **No-Object Loss**: Penalizes confidence error if NO object is present. (Weighted lower, $\lambda_{noobj}=0.5$).
+4.  **Class Loss**: Penalizes classification errors.
+
+## 5. Architecture
+
+```mermaid
+graph LR
+    Input[Input Image 448x448] --> ConvLayers[Convolutional Layers (Darknet)]
+    ConvLayers --> FC[Fully Connected Layers]
+    FC --> Reshape[Reshape]
+    Reshape --> Output[Output Tensor 7x7x30]
+    
+    subgraph "Output Tensor (per cell)"
+    Output --> Class[Class Probs (20)]
+    Output --> Box1[BBox 1 (x,y,w,h,c)]
+    Output --> Box2[BBox 2 (x,y,w,h,c)]
+    end
+    
+    style Input fill:#f9f,stroke:#333,stroke-width:2px
+    style Output fill:#9f9,stroke:#333,stroke-width:2px
+    style ConvLayers fill:#ff9,stroke:#333,stroke-width:2px
+```
+
+## 6. Implementation Details
+The repository contains:
+
+### PyTorch Implementation (`00_model.py`)
+*   **`Yolov1` Class**: Implements the architecture inspired by GoogLeNet (24 convolutional layers followed by 2 fully connected layers).
+*   **`YoloLoss` Class**: Implements the complex custom loss function described in the paper.
+*   **`CNNBlock`**: Helper class for Conv+BatchNorm+LeakyReLU blocks.
+
+### Visualization Script (`01_visualize_grid.py`)
+*   Generates a diagram showing the $S \times S$ grid and how a specific cell is responsible for an object centered within it.
+
+## 7. How to Run
+Run the script to verify the model architecture:
+
 ```bash
-# Verify model architecture
 python 00_model.py
 ```
+
+## 8. Implementation Results
+
+### The Grid Concept
+The image is divided into a 7x7 grid. The red cell is responsible for detecting the object because the object's center (red x) falls inside it.
+
+![YOLO Grid](assets/yolo_grid.png)
+
+### Model Verification
+Running `00_model.py` confirms that the input tensor shape `(2, 3, 448, 448)` is correctly processed into the output tensor `(2, 1470)`, which corresponds to $7 \times 7 \times 30$.
+
+## 9. References
+*   Redmon, J., Divvala, S., Girshick, R., & Farhadi, A. (2016). *You Only Look Once: Unified, Real-Time Object Detection*. CVPR.
